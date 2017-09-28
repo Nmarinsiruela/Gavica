@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="55dip"
+    android:orientation="horizontal"
+    >
+
+    <TextView
+        android:id="@+id/lblListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hintName"
+        android:gravity="start"
+        android:textSize="19sp"
+        android:layout_toEndOf="@+id/favourite" />
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:paddingStart="10sp"
+        android:paddingEnd="0sp"/>
+
+    <ImageView
+        android:id="@+id/favourite"
+        android:contentDescription="@string/favor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/checkBox"
+        android:clickable="false"
+        android:focusable="false"
+        android:paddingStart="10sp"
+        android:paddingEnd="10sp"
+        android:src="@drawable/ic_star"
+        android:visibility="invisible"/>
+
+
+
+</RelativeLayout>

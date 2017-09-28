@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Gavica</string>
+
+
+    <string name="journeyName">Dale un nombre a tu viaje: </string>
+    <string name="hintName">Nombre</string>
+    <string name="journeyType">Escoge tu tipo de viaje: </string>
+    <string name="journeyDate1">Marca la fecha de ida: </string>
+    <string name="journeyDate2">Marca la fecha de vuelta: </string>
+    <string name="buttonInsertData">Crear nuevo Viaje</string>
+    <string name="journey_prompt">Escoge un tipo de viaje:</string>
+    <string name="favor">Icono de favorito</string>
+
+
+    <string-array name="journeyTypes">
+        <item>Diversión</item>
+        <item>Playa</item>
+        <item>Trabajo</item>
+        <item>Familia</item>
+        <item>Romántico</item>
+        <item>Otros</item>
+    </string-array>
+</resources>

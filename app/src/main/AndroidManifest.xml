@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="nmarin.appgenerators.com.gavica">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MaterialSheetFab.Base">
+        <activity android:name=".activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".activity.InsertDataDialog">
+
+        </activity>
+        <activity android:name=".activity.MaletaActivity">
+
+        </activity>
+        <activity android:name=".database_helper.AndroidDatabaseManager">
+
+        </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="e72206886060f484f11dbf050e4941d71e38f792" />
+    </application>
+
+</manifest>
