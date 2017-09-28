@@ -17,7 +17,6 @@ import android.support.v7.widget.Toolbar;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
-import com.gordonwong.materialsheetfab.MaterialSheetFab;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,10 +47,6 @@ public class MaletaActivity extends AppCompatActivity {
 
     Maleta maleta;
     List<Relation> listRelations;
-
-
-    private MaterialSheetFab materialSheetFab;
-    private int statusBarColor;
 
     FloatingActionMenu materialDesignFAM;
     FloatingActionButton fabComp;
@@ -112,9 +107,6 @@ public class MaletaActivity extends AppCompatActivity {
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v,
                                         int groupPosition, long id) {
-                // Toast.makeText(getApplicationContext(),
-                // "Group Clicked " + listDataHeader.get(groupPosition),
-                // Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -209,7 +201,6 @@ public class MaletaActivity extends AppCompatActivity {
                 }
             }
         });
-        //  materialDesignFAM.setOnMenuButtonClickListener(this);
 
 
     } // FIN OnCreate
@@ -241,7 +232,6 @@ public class MaletaActivity extends AppCompatActivity {
         }
 
         // ListDataHeader contiene todos los elementos Comp, falta coger los Cosa.
-
 
         for (int x=0; x<arrayElements.size(); x++){
             listDataChild.put(listDataHeader.get(x), arrayElements.get(x));
@@ -327,14 +317,6 @@ public class MaletaActivity extends AppCompatActivity {
         alert.show();
     }
 
-    private int getStatusBarColor() {
-        return getWindow().getStatusBarColor();
-    }
-
-    private void setStatusBarColor(int color) {
-        getWindow().setStatusBarColor(color);
-    }
-
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
@@ -346,7 +328,6 @@ public class MaletaActivity extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
         finish();
-
     }
 
 
@@ -360,6 +341,5 @@ public class MaletaActivity extends AppCompatActivity {
         }
         return r;
     }
-
 
 }
