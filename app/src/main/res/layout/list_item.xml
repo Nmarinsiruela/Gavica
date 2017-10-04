@@ -33,7 +33,7 @@
         android:focusable="false"
         android:paddingStart="10sp"
         android:paddingEnd="10sp"
-        android:src="@drawable/ic_star"
+        android:src="@drawable/ic_critical"
         android:visibility="invisible"/>
 
 

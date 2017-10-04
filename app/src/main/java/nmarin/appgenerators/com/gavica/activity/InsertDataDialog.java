@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
@@ -40,7 +41,6 @@ public class InsertDataDialog extends AppCompatActivity implements View.OnClickL
         dateStartET = findViewById(R.id.editStartJourney);
         dateReturnET = findViewById(R.id.editReturnJourney);
 
-		//todo Probar que tira.
 		EditText edittext = findViewById(R.id.titleJourneyET);
 		edittext.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         btn.setOnClickListener(this);

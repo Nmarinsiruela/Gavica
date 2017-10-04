@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -32,10 +35,8 @@ import nmarin.appgenerators.com.gavica.model.ExpandableListAdapter;
 import nmarin.appgenerators.com.gavica.database_helper.Maleta;
 import nmarin.appgenerators.com.gavica.database_helper.Relation;
 
-// TODO: Estudiar Menús para cosas y compartimentos.
+// TODO: Hacer estas tareas.
 // Añadir botón de Editar para Cosa, incluye atributos. Nueva activity. Listview que según pulsas salen los otros attr. Creas un nuevo Atributo, guardas y actualizas Relations.
-// Añadir botón de Editar para Compartimiento. Solo nombre.
-// Añadir botón de Borrar para ambas cosas.
 
 public class MaletaActivity extends AppCompatActivity {
     OpenHelper mydb;
@@ -100,6 +101,7 @@ public class MaletaActivity extends AppCompatActivity {
         // setting list adapter
         expListView.setAdapter(listAdapter);
 
+        registerForContextMenu(expListView);
 
         // Listview Group click listener
         expListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
@@ -205,6 +207,100 @@ public class MaletaActivity extends AppCompatActivity {
 
     } // FIN OnCreate
 
+//    @Override
+///**
+// * This method will be called everytime a view register itself for floating context menu
+// */
+//    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+//        super.onCreateContextMenu(menu, v, menuInfo);
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.context_menu, menu);
+//    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        Log.i("", "Click");
+        ExpandableListView.ExpandableListContextMenuInfo info = (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
+
+        int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+        int groupPosition = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+        int childPosition = ExpandableListView.getPackedPositionChild(info.packedPosition);
+
+        // Show context menu for groups
+        if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+            menu.setHeaderTitle("Categoría");
+            menu.add(0, 0, 1,"Borrar");
+
+            // Show context menu for children
+        } else if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+            menu.setHeaderTitle("Cosa");
+            menu.add(0, 2, 1, "Editar");
+
+            if (listDataChild.get(listDataHeader.get(groupPosition)).get(childPosition).getCritical() == 0){
+                menu.add(0, 1, 2, "Marcar como crítico");
+            }else{
+                menu.add(0, 1, 2, "Desmarcar como crítico");
+            }
+
+
+            menu.add(0, 0, 3, "Borrar");
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        ExpandableListView.ExpandableListContextMenuInfo info = (ExpandableListView.ExpandableListContextMenuInfo) item
+                .getMenuInfo();
+
+        int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+        int groupPosition = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+        int childPosition = ExpandableListView.getPackedPositionChild(info.packedPosition);
+
+        if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+            switch (item.getItemId()) {
+                case 0:
+                    deleteComp(groupPosition);
+                    break;
+            }
+
+
+        } else if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+
+            long comp_id = mydb.getCompIdFromTitle(listAdapter.getGroup(groupPosition).toString());
+            long cosa_id = mydb.getCosaIdFromTitle(listDataChild.get(listDataHeader.get(groupPosition)).get(childPosition).getElement());
+            switch (item.getItemId()) {
+                case 0: // BORRAR
+                    mydb.deleteCosa(cosa_id, comp_id, maleta.getId());
+                    listDataChild.get(listDataHeader.get(groupPosition)).remove(childPosition);
+                   // listDataChild.remove((listDataHeader.get(groupPosition)));
+
+//                    listDataChild.remove(listDataHeader.get(groupPosition));
+//                    listDataHeader.remove(groupPosition);
+                    listAdapter.notifyDataSetChanged();
+                    break;
+                case 1: // CRITICO
+                    Relation r = getRelationFromList(mydb.getCompCosaByIds(comp_id,cosa_id));
+
+                    if (r.getCritical() ==0){
+                        r.setCritical(1);
+                        listDataChild.get(listDataHeader.get(groupPosition)).get(childPosition).setCritical(1);
+                    }else{
+                        r.setCritical(0);
+                        listDataChild.get(listDataHeader.get(groupPosition)).get(childPosition).setCritical(0);
+                    }
+                    mydb.updateRelation(r);
+                    listAdapter.notifyDataSetChanged();
+                    break;
+                case 2: // EDITAR
+                    Toast.makeText(MaletaActivity.this, "EDITAR " +"Cosa : " + listAdapter.getChild(groupPosition,childPosition), Toast.LENGTH_SHORT).show();
+                    break;
+            }
+            // do someting with child
+        }
+
+        return super.onContextItemSelected(item);
+    }
 
     private void prepareListData( List<Relation> listRelations) {
         listDataHeader = new ArrayList<String>();
@@ -238,9 +334,6 @@ public class MaletaActivity extends AppCompatActivity {
         }
     }
 
-
-
-
     public void newCosa(){
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setTitle("Selecciona un Compartimiento:");
@@ -272,12 +365,22 @@ public class MaletaActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog,int which) {
                         String YouEditTextValue = edittext.getText().toString();
-
                         long compcosa_id = mydb.createCosaComp(mydb.createThing(new Cosa(YouEditTextValue)), mydb.getCompIdFromTitle(strName));
-                        mydb.createRelations(compcosa_id, maleta.getId(), 0, 0, 1);
-                        listDataChild.get(strName).add(new  ElementCheckedCritical(YouEditTextValue, 0, 0)) ;
-                        listAdapter.notifyDataSetChanged();
-                        dialog.dismiss();
+                        boolean itExist = false;
+                        for (int x =0; x<listRelations.size(); x++){
+
+                            if (compcosa_id == listRelations.get(x).getComp_cosa()){
+                                Toast.makeText(MaletaActivity.this, "Error. Cosa ya existente.", Toast.LENGTH_SHORT).show();
+                                itExist = true;
+                                break;
+                            }
+                        }
+                        if (!itExist){
+                            mydb.createRelations(compcosa_id, maleta.getId());
+                            listDataChild.get(strName).add(new  ElementCheckedCritical(YouEditTextValue, 0, 0)) ;
+                            listAdapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                        }
                     }
                 });
                 builderInner.show();
@@ -287,22 +390,102 @@ public class MaletaActivity extends AppCompatActivity {
     }
 
     public void newComp(){
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        final EditText edittext = new EditText(this);
-     //   edittext.setInputType(InputType.TYPE_CLASS_TEXT);
-        edittext.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        alert.setMessage("Insertar Compartimiento");
-        alert.setTitle("¿Quieres añadir un nuevo compartimiento?");
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+        builderSingle.setTitle("Selecciona un Compartimiento:");
 
-        alert.setView(edittext);
+        final List<Compartiment> listaAllComp = mydb.getAllComps();
+
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.add("Insertar Nueva Categoría");
+
+        // Agrego a la lista los compartimientos que NO están ya en la maleta.
+        for (int x=0; x<listaAllComp.size(); x++){
+            if (!listDataHeader.contains(listaAllComp.get(x).getTitle())){
+                arrayAdapter.add(listaAllComp.get(x).getTitle());
+            }
+        }
+
+        builderSingle.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String strName = arrayAdapter.getItem(which);
+
+                if (strName.equals("Insertar Nueva Categoría")){
+                    AlertDialog.Builder builderInner = new AlertDialog.Builder(MaletaActivity.this, R.style.myDialog);
+                    builderInner.setMessage("Insertar Compartimiento");
+                    final EditText edittext = new EditText(getApplicationContext());
+                    //   edittext.setInputType(InputType.TYPE_CLASS_TEXT);
+                    edittext.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                    builderInner.setView(edittext);
+                    builderInner.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,int which) {
+                            String YouEditTextValue = edittext.getText().toString();
+                            boolean itExist = false;
+                            for (int x=0; x<listaAllComp.size(); x++){
+                                if (YouEditTextValue.equals(listaAllComp.get(x).getTitle())){
+                                    Toast.makeText(MaletaActivity.this, "Error. Categoría disponible en el sistema.", Toast.LENGTH_SHORT).show();
+                                    itExist = true;
+                                    break;
+                                }
+                            }
+
+                            if (!itExist) {
+                                listDataHeader.add(YouEditTextValue);
+                                mydb.createComp(new Compartiment(YouEditTextValue));
+                                listDataChild.put(YouEditTextValue, (new ArrayList<ElementCheckedCritical>()));
+                                listAdapter.notifyDataSetChanged();
+                                dialog.dismiss();
+                            }else{
+                                dialog.dismiss();
+                            }
+
+                        }
+                    });
+                    builderInner.show();
+                }else{
+                    // Ya existe la comp, solo debo sacarla.
+                    listDataHeader.add(strName);
+                    ArrayList<Integer> arrayInt = mydb.getCompCosaIDbyComp(mydb.getCompIdFromTitle(strName));
+                    ArrayList<ElementCheckedCritical> arrayCosas = new ArrayList<ElementCheckedCritical>();
+
+                    for (int x=0; x< arrayInt.size(); x++){
+                        mydb.createRelations(arrayInt.get(x), maleta.getId());
+                        Comp_Cosa compcosa = mydb.getCompCosa(arrayInt.get(x));
+                        Cosa cosa = mydb.getCosa(compcosa.getCosa());
+                        arrayCosas.add(new ElementCheckedCritical(cosa.getTitle(), 0, 0 ));
+                    }
+
+                    // Aquí, debo generar el nuevo ElemCheckCrit con los valores de BD.
+                    listDataChild.put(strName, arrayCosas);
+                    listAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+        builderSingle.show();
+    }
+
+
+    public void deleteComp(final int groupPosition){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Borrar Compartimiento");
+        alert.setMessage("Borrarás todas las cosas asociadas. ¿Quieres borrar este compartimiento?");
 
         alert.setPositiveButton("Si", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 //What ever you want to do with the value
-                String YouEditTextValue = edittext.getText().toString();
-                listDataHeader.add(YouEditTextValue);
-                mydb.createComp(new Compartiment(YouEditTextValue));
-                listDataChild.put(YouEditTextValue, (new  ArrayList<ElementCheckedCritical>()));
+                long comp_id = mydb.getCompIdFromTitle(listAdapter.getGroup(groupPosition).toString());
+                mydb.deleteCompFromMaleta(comp_id, maleta.getId());
+                listDataChild.remove(listDataHeader.get(groupPosition));
+                listDataHeader.remove(groupPosition);
                 listAdapter.notifyDataSetChanged();
             }
         });
@@ -316,6 +499,8 @@ public class MaletaActivity extends AppCompatActivity {
         });
         alert.show();
     }
+
+
 
     @Override
     public boolean onSupportNavigateUp() {

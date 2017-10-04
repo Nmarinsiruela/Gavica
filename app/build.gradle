@@ -17,7 +17,7 @@ repositories {
 apply plugin: 'io.fabric'
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "nmarin.appgenerators.com.gavica"
         minSdkVersion 21

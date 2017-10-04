@@ -49,11 +49,7 @@ public class MainActivity extends AppCompatActivity  {
 
         listMaleta = mydb.getAllSuitcases();
 
-        if (listMaleta.size() == 0) {
-
-        } else {
-
-
+        if (listMaleta.size() != 0) {
             for (int x = 0; x < listMaleta.size(); x++) {
                 mNavItems.add(new JourneyHeader(listMaleta.get(x).getTitle(), listMaleta.get(x).getDateStart(), listMaleta.get(x).getDateReturn()));
             }
@@ -74,41 +70,42 @@ public class MainActivity extends AppCompatActivity  {
                     Intent intent = new Intent(getApplicationContext(), InsertDataDialog.class);
                     startActivity(intent);
                     finish();
+                }else {
+
+
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                            MainActivity.this);
+
+                    // set title
+                    alertDialogBuilder.setTitle("Creación de nuevo viaje");
+
+                    // set dialog message
+                    alertDialogBuilder
+                            .setMessage("¿Quieres crear un nuevo viaje?")
+                            .setCancelable(false)
+                            .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // if this button is clicked, close
+                                    // current activity
+                                    Intent intent = new Intent(getApplicationContext(), InsertDataDialog.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // if this button is clicked, just close
+                                    // the dialog box and do nothing
+                                    dialog.cancel();
+                                }
+                            });
+
+                    // create alert dialog
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+
+                    // show it
+                    alertDialog.show();
                 }
-
-
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                        MainActivity.this);
-
-                // set title
-                alertDialogBuilder.setTitle("Creación de nuevo viaje");
-
-                // set dialog message
-                alertDialogBuilder
-                        .setMessage("¿Quieres crear un nuevo viaje?")
-                        .setCancelable(false)
-                        .setPositiveButton("Si", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // if this button is clicked, close
-                                // current activity
-                                Intent intent = new Intent(getApplicationContext(), InsertDataDialog.class);
-                                startActivity(intent);
-                                finish();
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // if this button is clicked, just close
-                                // the dialog box and do nothing
-                                dialog.cancel();
-                            }
-                        });
-
-                // create alert dialog
-                AlertDialog alertDialog = alertDialogBuilder.create();
-
-                // show it
-                alertDialog.show();
             }
         });
 
