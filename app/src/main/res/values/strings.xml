@@ -20,4 +20,14 @@
         <item>Romántico</item>
         <item>Otros</item>
     </string-array>
+
+    <string name="edit">Editar</string>
+    <string name="remove">Borrar</string>
+    <string name="critical">Marcar como crítico</string>
+
+    <string name="thing">Cosa</string>
+    <string name="numero">Número</string>
+
+
+
 </resources>

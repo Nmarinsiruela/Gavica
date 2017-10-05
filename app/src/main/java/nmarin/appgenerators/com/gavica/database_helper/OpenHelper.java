@@ -17,6 +17,7 @@ import nmarin.appgenerators.com.gavica.model.Compartiment;
 
 public class OpenHelper extends SQLiteOpenHelper {
 
+
     // Logcat tag
     private static final String LOG = "DatabaseHelper";
 
@@ -132,41 +133,91 @@ public class OpenHelper extends SQLiteOpenHelper {
     public long createThing(Cosa cosa) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        // Primero hay que verificar que no existe ya.
+        String selectQuery = "SELECT  "+ KEY_ID + " FROM " + TABLE_COSAS + " WHERE "
+                + KEY_TITLE + " = " + "'" +cosa.getTitle() + "'";
+
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.getCount() != 0) {
+            c.moveToFirst();
+            long value = c.getInt(c.getColumnIndex(KEY_ID));
+            c.close();
+            return value;
+        }else{
         ContentValues values = new ContentValues();
         values.put(KEY_TITLE, cosa.getTitle());
-
         return db.insert(TABLE_COSAS, null, values);
+        }
     }
 
     public long createComp(Compartiment comp) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_TITLE, comp.getTitle());
+        // Primero hay que verificar que no existe ya.
+        String selectQuery = "SELECT  "+ KEY_ID + " FROM " + TABLE_COMPS + " WHERE "
+                + KEY_TITLE + " = " + "'" +comp.getTitle() + "'";
 
-        return db.insert(TABLE_COMPS, null, values);
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.getCount() != 0) {
+            c.moveToFirst();
+            long value = c.getInt(c.getColumnIndex(KEY_ID));
+            c.close();
+            return value;
+        }else{
+            ContentValues values = new ContentValues();
+            values.put(KEY_TITLE, comp.getTitle());
+            return db.insert(TABLE_COMPS, null, values);
+        }
+
     }
 
     public long createSuitCase(Maleta maleta) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_TITLE, maleta.getTitle());
-        values.put(KEY_TYPE, maleta.getType());
-        values.put(KEY_DATE_START, maleta.getDateStart());
-        values.put(KEY_DATE_RETURN, maleta.getDateReturn());
+        // Primero hay que verificar que no existe ya.
+        String selectQuery = "SELECT  " + KEY_ID + " FROM " + TABLE_MALETAS + " WHERE "
+                + KEY_ID + " = " + maleta.getId();
 
-        return db.insert(TABLE_MALETAS, null, values);
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.getCount() != 0) {
+            c.moveToFirst();
+            long value = c.getInt(c.getColumnIndex(KEY_ID));
+            c.close();
+            return value;
+        } else {
+            ContentValues values = new ContentValues();
+            values.put(KEY_TITLE, maleta.getTitle());
+            values.put(KEY_TYPE, maleta.getType());
+            values.put(KEY_DATE_START, maleta.getDateStart());
+            values.put(KEY_DATE_RETURN, maleta.getDateReturn());
+
+            return db.insert(TABLE_MALETAS, null, values);
+        }
     }
 
     public long createCosaComp(long thing_id, long comp_id) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        // Primero hay que verificar que no existe ya.
+        String selectQuery = "SELECT  "+ KEY_ID +" FROM " + TABLE_COSA_COMP + " WHERE "
+                + KEY_COMP + " = " + comp_id +" AND " + KEY_COSA + " = " + thing_id;
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c.getCount() != 0) {
+            c.moveToFirst();
+            long value = c.getInt(c.getColumnIndex(KEY_ID));
+            c.close();
+            return value;
+        }else{
 
         ContentValues values = new ContentValues();
         values.put(KEY_COSA, thing_id);
         values.put(KEY_COMP, comp_id);
 
         return db.insert(TABLE_COSA_COMP, null, values);
+        }
+
     }
 
     public long createAttributes(Atributo attr) {
@@ -194,6 +245,19 @@ public class OpenHelper extends SQLiteOpenHelper {
         values.put(KEY_CHECKED, checked);
         values.put(KEY_CRITICAL, critical);
         values.put(KEY_ATTRIBUTES, attrs);
+
+        return  db.insert(TABLE_RELACIONES, null, values);
+    }
+
+    public long createRelations(long cosa_comp_id, long suit_id){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_COSA_COMP, cosa_comp_id);
+        values.put(KEY_MALETA, suit_id);
+        values.put(KEY_CHECKED, 0);
+        values.put(KEY_CRITICAL, 0);
+        values.put(KEY_ATTRIBUTES, 1);
 
         return  db.insert(TABLE_RELACIONES, null, values);
     }
@@ -354,6 +418,65 @@ public class OpenHelper extends SQLiteOpenHelper {
         return td;
     }
 
+    public ArrayList<Integer> getCompCosaIDbyComp(long comp_id){
+        ArrayList<Integer> array = new ArrayList<>();
+        String selectQuery = "SELECT  "+ KEY_ID +" FROM " + TABLE_COSA_COMP + " WHERE "
+                + KEY_COMP + " = " +comp_id;
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        db.beginTransaction();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                array.add(c.getInt(c.getColumnIndex(KEY_ID)));
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        return array;
+    }
+
+    private String getCompCosabyComp(long comp_id){
+        ArrayList<Integer> array = new ArrayList<>();
+        String selectQuery = "SELECT  "+ KEY_ID +" FROM " + TABLE_COSA_COMP + " WHERE "
+                + KEY_COMP + " = " +comp_id;
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        db.beginTransaction();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                array.add(c.getInt(c.getColumnIndex(KEY_ID)));
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        StringBuilder str = new StringBuilder("(");
+
+        for (int x=0; x< array.size(); x++){
+            if (x == array.size()-1){
+                str.append(array.get(x)).append(")");
+            }else {
+                str.append(array.get(x)).append(",");
+            }
+        }
+        return str.toString();
+    }
+
+
+
     public long getRelationByIds(long compcosa_id, long maleta_id){
         SQLiteDatabase db = this.getReadableDatabase();
         db.beginTransaction();
@@ -504,7 +627,7 @@ public class OpenHelper extends SQLiteOpenHelper {
                 td.setSuit((c.getInt(c.getColumnIndex(KEY_MALETA))));
                 td.setChecked((c.getInt(c.getColumnIndex(KEY_CHECKED))));
                 td.setCritical((c.getInt(c.getColumnIndex(KEY_CRITICAL))));
-
+                td.setAttributes((c.getInt(c.getColumnIndex(KEY_ATTRIBUTES))));
                 todos.add(td);
             } while (c.moveToNext());
         }
@@ -534,6 +657,7 @@ public class OpenHelper extends SQLiteOpenHelper {
                 td.setSuit((c.getInt(c.getColumnIndex(KEY_MALETA))));
                 td.setChecked((c.getInt(c.getColumnIndex(KEY_CHECKED))));
                 td.setCritical((c.getInt(c.getColumnIndex(KEY_CRITICAL))));
+                td.setAttributes((c.getInt(c.getColumnIndex(KEY_ATTRIBUTES))));
 
                 todos.add(td);
             } while (c.moveToNext());
@@ -620,7 +744,7 @@ public class OpenHelper extends SQLiteOpenHelper {
 
     public void deleteAllAttributes(){
         String selectQuery = "DELETE FROM " + TABLE_ATTR + " where not exists (select " + KEY_ATTRIBUTES + " from "
-                 + TABLE_RELACIONES+ " where " + TABLE_RELACIONES + ".attrs = "+ TABLE_ATTR + ".id)" ;
+                + TABLE_RELACIONES+ " where " + TABLE_RELACIONES + ".attrs = "+ TABLE_ATTR + ".id)" ;
 
         Log.e(LOG, selectQuery);
 
@@ -648,7 +772,7 @@ public class OpenHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    public void deleteComp (long comp_id, long maleta_id){
+    public void deleteCompFromMaleta(long comp_id, long maleta_id){
         // Se obtiene su CompCosa, después de borra de Relations ese elemento usando maleta_id.
 
         String compcosa_id = getCompCosabyComp(comp_id);
@@ -765,43 +889,14 @@ public class OpenHelper extends SQLiteOpenHelper {
     }
 
 
-
-    private String getCompCosabyComp(long comp_id){
-        ArrayList<Integer> array = new ArrayList<>();
-        String selectQuery = "SELECT  "+ KEY_ID +" FROM " + TABLE_COSA_COMP + " WHERE "
-                + KEY_COMP + " = " +comp_id;
-
-        Log.e(LOG, selectQuery);
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        db.beginTransaction();
-        Cursor c = db.rawQuery(selectQuery, null);
-
-        // looping through all rows and adding to list
-        if (c.moveToFirst()) {
-            do {
-                array.add(c.getInt(c.getColumnIndex(KEY_ID)));
-            } while (c.moveToNext());
-        }
-        c.close();
-        db.setTransactionSuccessful();
-        db.endTransaction();
-
-        StringBuilder str = new StringBuilder("(");
-
-        for (int x=0; x< array.size(); x++){
-            if (x == array.size()-1){
-                str.append(array.get(x)).append(")");
-            }
-            str.append(array.get(x)).append(",");
-        }
-        return str.toString();
-    }
-
+    // Comps: Baño, Electrónica, Ropa, Documentación, Básico.
 
     // Comps: Baño, Electrónica, Ropa, Trabajo, Básico.
     //  ID:    1        2          3       4       5
     // Types: Diversión, Playa, Trabajo, Familia, Romántico, Otros.
+
+    // TODO Pendiente mejorar esto.
+
     private String converTypeToComps(String type){
         String comps="(";
 
@@ -810,7 +905,7 @@ public class OpenHelper extends SQLiteOpenHelper {
                 comps = comps + "2,3,5)";
                 break;
             case "Trabajo":
-                comps = comps + "1,2,3,4,5)";
+                comps = comps + "1,2,4,5)";
                 break;
             default:
                 comps = comps + "1,2,3,4,5)";
@@ -822,53 +917,53 @@ public class OpenHelper extends SQLiteOpenHelper {
 
 
     private void elementosBase(){
-        long comp1_id = createComp(new Compartiment("Baño"));
-        long cosa4_id = createThing(new Cosa("Champú"));
-        long cosa5_id = createThing(new Cosa("Gel"));
-        long cosa1_id = createThing(new Cosa("Cepillo de dientes"));
+        long bano_id = createComp(new Compartiment("Baño"));
+        createCosaComp(createThing(new Cosa("Champú")) , bano_id);
+        createCosaComp(createThing(new Cosa("Gel")) , bano_id);
+        createCosaComp(createThing(new Cosa("Cepillo de dientes")) , bano_id);
+        createCosaComp(createThing(new Cosa("Pasta de dientes")) , bano_id);
+        createCosaComp(createThing(new Cosa("Desodorante")) , bano_id);
+        createCosaComp(createThing(new Cosa("Medicinas")) , bano_id);
+        createCosaComp(createThing(new Cosa("Hojilla de afeitar")) , bano_id);
+        createCosaComp(createThing(new Cosa("Lentes de Contacto")) , bano_id);
+
+        long elec_id = createComp( new Compartiment("Electrónica"));
+        createCosaComp(createThing(new Cosa("Cargador de móvil")) , elec_id);
+        createCosaComp(createThing(new Cosa("Ordenador/Tablet y cargador")) , elec_id);
+        createCosaComp(createThing(new Cosa("Adaptador de corriente")) , elec_id);
+        createCosaComp(createThing(new Cosa("Cámara, baterías, SD")) , elec_id);
+        createCosaComp(createThing(new Cosa("Auriculares")) , elec_id);
+
+        long ropa_id = createComp(new Compartiment("Ropa"));
+        createCosaComp(createThing(new Cosa("Camisetas")) , ropa_id);
+        createCosaComp(createThing(new Cosa("Pantalones")) , ropa_id);
+        createCosaComp(createThing(new Cosa("Jerséis")) , ropa_id);
+        createCosaComp(createThing(new Cosa("Calcetines")) , ropa_id);
+        createCosaComp(createThing(new Cosa("Ropa interior")) , ropa_id);
+        createCosaComp(createThing(new Cosa("Pijama")) , ropa_id);
+        createCosaComp(createThing(new Cosa("Zapatos/Deportivas/Botas")) , ropa_id);
 
 
-        long comp2_id = createComp( new Compartiment("Electrónica"));
-        long cosa2_id = createThing(new Cosa("Cargador de móvil"));
 
-        long comp5_id = createComp(new Compartiment("Ropa"));
-        long cosa3_id = createThing(new Cosa("Camiseta"));
-        long cosa6_id = createThing(new Cosa("Pantalón"));
-
-
-
-        long comp4_id = createComp(new Compartiment("Trabajo"));
-        long cosa8_id = createThing(new Cosa("Maletín"));
-        long cosa9_id = createThing(new Cosa("Teléfono de Empresa"));
+        long work_id = createComp(new Compartiment("Documentación"));
+        createCosaComp(createThing(new Cosa("Tarjeta de crédito")) , work_id);
+        createCosaComp(createThing(new Cosa("Billetes de avión/tren/barco")) , work_id);
+        createCosaComp(createThing(new Cosa("Carnet de conducir")) , work_id);
+        createCosaComp(createThing(new Cosa("Tarjeta sanitaria")) , work_id);
 
 
-        long comp3_id = createComp(new Compartiment("Básico"));
-        long cosa7_id = createThing(new Cosa("Gafas"));
 
-        // Comps: Baño, Electrónica, Ropa, Trabajo, Básico.
+        long basic_id = createComp(new Compartiment("Básico"));
+        createCosaComp(createThing(new Cosa("Gafas")) , basic_id);
+        createCosaComp(createThing(new Cosa("Dinero")) , basic_id);
+        createCosaComp(createThing(new Cosa("DNI / Pasaporte")) , basic_id);
+        createCosaComp(createThing(new Cosa("Candado para la maleta")) , basic_id);
 
-        long cos_comp1 = createCosaComp(cosa1_id, comp1_id);
-        long cos_comp2 = createCosaComp(cosa2_id, comp2_id);
-        long cos_comp3 = createCosaComp(cosa3_id, comp5_id);
-        long cos_comp4 = createCosaComp(cosa4_id, comp1_id);
-        long cos_comp5 = createCosaComp(cosa5_id, comp1_id);
-        long cos_comp6 = createCosaComp(cosa6_id, comp5_id);
-        long cos_comp7 = createCosaComp(cosa7_id, comp3_id);
 
-        createCosaComp(cosa8_id, comp4_id);
-        createCosaComp(cosa9_id, comp4_id);
+
+
 
         createAttributes(new Atributo(1, "","","",""));
-//        Maleta ma1 = new Maleta("Lanzarote2017", "12/02/17","18/02/17" );
-//        Maleta ma2 = new Maleta("París2019", "10/01/19","18/01/19" );
-//
-//        long ma1_id = mydb.createSuitCase(ma1);
-//        long ma2_id = mydb.createSuitCase(ma2);
-
-//      long id, long cosa, long comp, long suit, int checked, int critical
-
-//        long r1_id = mydb.createRelations(cosa1_id, comp1_id, ma1_id, 0,0);
-//        long r2_id = mydb.createRelations(cosa2_id, comp2_id, ma1_id, 0,1);
     }
 
 }
